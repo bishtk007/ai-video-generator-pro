@@ -44,8 +44,14 @@ PRICE_IDS = {
 }
 
 # Load config file
-with open('config.yaml') as file:
-    config = yaml.load(file, Loader=SafeLoader)
+try:
+    with open('config.yaml') as file:
+        st.write("Debug: Found config.yaml")
+        config = yaml.load(file, Loader=SafeLoader)
+except Exception as e:
+    st.error(f"Error loading config: {str(e)}")
+    st.write("Debug: Current directory contents:")
+    st.write(os.listdir())
 
 # Initialize default config with hashed password
 config = {
