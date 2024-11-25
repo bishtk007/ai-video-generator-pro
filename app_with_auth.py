@@ -33,7 +33,7 @@ config = {
             'admin': {
                 'email': 'admin@example.com',
                 'name': 'Admin User',
-                'password': '$2b$12$7YxB1sNZV2Y1sUq8L8NmkOYqvK8UbY7YVqDg6I8gMX9yyWIVFn6Pq'  # admin123
+                'password': '$2b$12$YWpWCW3X0yKfv1rXWkHNJeYtUF9DXLJGPr4GnSVP0UxCNmqGGI6yC'  # password: admin123
             }
         }
     },
