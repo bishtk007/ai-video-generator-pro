@@ -26,17 +26,28 @@ st.set_page_config(page_title="AI Video Generator Pro", layout="wide")
 # Constants
 SD_URL = os.getenv('SD_API_URL', 'http://127.0.0.1:7860')
 
-# Initialize default config with plain text password (will be hashed automatically)
+# Initialize default config with hashed password
+hashed_passwords = stauth.Hasher(['abc123']).generate()
+
 config = {
     'credentials': {
         'usernames': {
-            'test': {
-                'email': 'test@example.com',
-                'name': 'Test User',
-                'password': 'test123'
+            'demo': {
+                'email': 'demo@example.com',
+                'name': 'Demo User',
+                'password': hashed_passwords[0]
             }
         }
     },
+    'cookie': {
+        'expiry_days': 30,
+        'key': 'some_signature_key',
+        'name': 'some_cookie_name'
+    },
+    'preauthorized': {
+        'emails': ['demo@example.com']
+    }
+}
     'cookie': {
         'expiry_days': 30,
         'key': 'abcdef123456789',
