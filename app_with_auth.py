@@ -26,13 +26,28 @@ st.set_page_config(page_title="AI Video Generator Pro", layout="wide")
 # Constants
 SD_URL = os.getenv('SD_API_URL', 'http://127.0.0.1:7860')
 
-# Load config file
-config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
-with open(config_path) as file:
-    config = yaml.load(file, Loader=SafeLoader)
-
-# Update cookie configuration from environment
-config['cookie']['key'] = os.getenv('COOKIE_KEY', config['cookie']['key'])
+# Initialize default config
+config = {
+    'credentials': {
+        'usernames': {
+            'admin': {
+                'email': 'admin@example.com',
+                'name': 'Admin User',
+                'password': '$2b$12$7YxB1sNZV2Y1sUq8L8NmkOYqvK8UbY7YVqDg6I8gMX9yyWIVFn6Pq'  # admin123
+            }
+        }
+    },
+    'cookie': {
+        'expiry_days': 30,
+        'key': os.getenv('COOKIE_KEY', 'default_key'),
+        'name': 'auth_cookie'
+    },
+    'preauthorized': {
+        'emails': [
+            'admin@example.com'
+        ]
+    }
+}
 
 # Initialize authenticator
 authenticator = stauth.Authenticate(
