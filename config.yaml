@@ -1,0 +1,15 @@
+credentials:
+  usernames:
+    demo:
+      email: demo@example.com
+      name: Demo User
+      password: $2b$12$7YxB1sNZV2Y1sUq8L8NmkOYqvK8UbY7YVqDg6I8gMX9yyWIVFn6Pq  # Password is 'abc123'
+
+cookie:
+  expiry_days: 30
+  key: default_secret_key  # This will be overridden by environment variable
+  name: ai_video_pro_cookie
+
+preauthorized:
+  emails:
+    - demo@example.com
