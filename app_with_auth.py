@@ -43,6 +43,9 @@ PRICE_IDS = {
     'pro': 'price_H5ggYwtDq8jGy8'     # $29.99/month
 }
 
+# Generate hashed password
+hashed_passwords = stauth.Hasher(['abc123']).generate()
+
 # Authentication configuration
 config = {
     'credentials': {
@@ -50,7 +53,7 @@ config = {
             'demo': {
                 'email': 'demo@example.com',
                 'name': 'Demo User',
-                'password': '$2b$12$7YxB1sNZV2Y1sUq8L8NmkOYqvK8UbY7YVqDg6I8gMX9yyWIVFn6Pq'  # Password is 'abc123'
+                'password': hashed_passwords[0]  # Fresh hash of 'abc123'
             }
         }
     },
@@ -65,6 +68,7 @@ config = {
 }
 
 st.write("Debug: Config initialized")
+st.write(f"Debug: Using fresh password hash: {hashed_passwords[0]}")
 
 # Initialize default config with hashed password
 config = {
