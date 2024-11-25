@@ -83,23 +83,23 @@ def generate_image(prompt, negative_prompt="", width=1024, height=1024, steps=30
         "Authorization": f"Bearer {os.getenv('STABILITY_API_KEY')}"
     }
     
+    # Build text prompts list
+    text_prompts = [{"text": prompt, "weight": 1}]
+    if negative_prompt:  # Only add negative prompt if it's not empty
+        text_prompts.append({"text": negative_prompt, "weight": -1})
+    
     payload = {
-        "text_prompts": [
-            {
-                "text": prompt,
-                "weight": 1
-            },
-            {
-                "text": negative_prompt,
-                "weight": -1
-            }
-        ],
+        "text_prompts": text_prompts,
         "cfg_scale": 7,
         "height": height,
         "width": width,
         "steps": steps,
         "samples": 1,
     }
+    
+    st.write(f"Debug: Using prompt: {prompt}")
+    if negative_prompt:
+        st.write(f"Debug: Using negative prompt: {negative_prompt}")
     
     try:
         st.write(f"Debug: Making API request to {SD_URL}")
