@@ -16,6 +16,14 @@ import base64
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
+# Set page config (MUST BE FIRST st. command)
+st.set_page_config(
+    page_title="AI Video Generator Pro",
+    page_icon="🎬",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 # Load environment variables
 load_dotenv()
 
