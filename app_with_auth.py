@@ -39,15 +39,7 @@ config = {
             }
         }
     },
-    'cookie': {
-        'expiry_days': 30,
-        'key': 'some_signature_key',
-        'name': 'some_cookie_name'
-    },
-    'preauthorized': {
-        'emails': ['demo@example.com']
-    }
-}
+    
     'cookie': {
         'expiry_days': 30,
         'key': 'abcdef123456789',
