@@ -206,74 +206,101 @@ if authentication_status:
             value="ugly, blurry, low quality, text, watermark, signature, deformed, bad anatomy, bad art, amateur")
 
         if prompt and st.button("Generate Video", type="primary"):
-            try:
-                # Show progress
-                progress_bar = st.progress(0)
-                status_text = st.empty()
+    try:
+        # Show progress
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        # Create directories if they don't exist
+        for folder in ['generated', 'output']:
+            os.makedirs(folder, exist_ok=True)
+            st.write(f"Created directory: {folder}")
+        
+        # Generate frames
+        status_text.text("Generating frames...")
+        image_paths = []
+        
+        for i in range(num_frames):
+            progress = (i + 1) / (num_frames + 1)
+            progress_bar.progress(progress)
+            
+            # Generate image using Stability AI API
+            output = generate_image(
+                prompt=prompt,
+                negative_prompt=negative_prompt,
+                width=width,
+                height=height,
+                steps=steps
+            )
+            
+            if output is None:
+                st.error("Failed to generate image")
+                break
                 
-                # Generate frames
-                status_text.text("Generating frames...")
-                image_paths = []
+            # Save generated image
+            filename = f"generated_{i}.png"  # Use sequential numbers
+            filepath = os.path.join('generated', filename)
+            output.save(filepath)
+            image_paths.append(filepath)
+            
+            status_text.text(f"Generated frame {i + 1}/{num_frames}")
+            st.write(f"Saved image to: {filepath}")
+            
+            # Show the generated image
+            st.image(output, caption=f"Frame {i + 1}")
+        
+        # Create video
+        if len(image_paths) == num_frames:
+            status_text.text("Creating video...")
+            output_video = "output_video.mp4"  # Use fixed name for testing
+            output_path = os.path.join('output', output_video)
+            
+            st.write(f"Starting video conversion with {len(image_paths)} frames")
+            st.write(f"Image paths: {image_paths}")
+            
+            converter = ImageToVideoConverter(output_path=output_path, fps=fps)
+            success = converter.convert_images_to_video('generated')
+            
+            if success:
+                # Increment usage
+                increment_usage(username)
                 
-                for i in range(num_frames):
-                    progress = (i + 1) / (num_frames + 1)
-                    progress_bar.progress(progress)
+                st.write(f"Video created at: {output_path}")
+                if os.path.exists(output_path):
+                    st.write(f"Video file size: {os.path.getsize(output_path)} bytes")
                     
-                    # Generate image using local SD API
-                    output = generate_image(
-                        prompt=prompt,
-                        negative_prompt=negative_prompt,
-                        width=width,
-                        height=height,
-                        steps=steps
-                    )
+                    # Display video
+                    status_text.text("Video generated successfully!")
+                    progress_bar.progress(1.0)
+                    st.video(output_path)
                     
-                    if output is None:
-                        st.error("Failed to generate image")
-                        break
-                        
-                    # Save generated image
-                    filename = f"generated_{uuid.uuid4()}.png"
-                    filepath = os.path.join('generated', filename)
-                    output.save(filepath)
-                    image_paths.append(filepath)
-                    
-                    status_text.text(f"Generated frame {i + 1}/{num_frames}")
-                    
-                    # Show the generated image
-                    st.image(output, caption=f"Frame {i + 1}")
-                
-                # Create video
-                if len(image_paths) == num_frames:
-                    status_text.text("Creating video...")
-                    output_video = f"output_{uuid.uuid4()}.mp4"
-                    output_path = os.path.join('output', output_video)
-                    
-                    converter = ImageToVideoConverter(output_path=output_path, fps=fps)
-                    success = converter.convert_images_to_video('generated')
-                    
-                    if success:
-                        # Increment usage
-                        increment_usage(username)
-                        
-                        # Display video
-                        status_text.text("Video generated successfully!")
-                        progress_bar.progress(1.0)
-                        st.video(output_path)
-                        
-                        # Download button
-                        with open(output_path, 'rb') as f:
-                            st.download_button(
-                                label="Download Video",
-                                data=f.read(),
-                                file_name=output_video,
-                                mime="video/mp4"
-                            )
-                    else:
-                        st.error("Failed to create video")
-                    
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+                    # Download button
+                    with open(output_path, 'rb') as f:
+                        video_bytes = f.read()
+                        st.download_button(
+                            label="Download Video",
+                            data=video_bytes,
+                            file_name=output_video,
+                            mime="video/mp4"
+                        )
+                else:
+                    st.error(f"Video file not found at {output_path}")
+            else:
+                st.error("Failed to create video - converter returned False")
+            
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+        st.write("Full error details:", e)
+        
+    finally:
+        # Clean up temporary files
+        try:
+            for path in image_paths:
+                if os.path.exists(path):
+                    os.remove(path)
+                    st.write(f"Cleaned up: {path}")
+        except Exception as e:
+            st.write(f"Cleanup error: {str(e)}")
                 
             finally:
                 # Clean up temporary files
