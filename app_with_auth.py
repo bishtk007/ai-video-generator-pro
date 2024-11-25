@@ -191,7 +191,38 @@ else:
         negative_prompt = st.text_area("Enter negative prompt (optional)", height=100,
                                      placeholder="Describe what you want to avoid in the generation...")
         
-        if prompt and st.button("Generate Video", type="primary"):
+        if st.button("Generate Video", type="primary"):
+    if not prompt:
+        st.error("Please enter a prompt first")
+    else:
+        st.write(f"Debug: Starting video generation with prompt: {prompt}")
+        try:
+            # Show progress
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            # Generate frames
+            status_text.text("Generating frames...")
+            image_paths = []
+            
+            for i in range(num_frames):
+                st.write(f"Debug: Generating frame {i+1} of {num_frames}")
+                # Generate image
+                image = generate_image(prompt, negative_prompt, width, height, steps)
+                
+                if image:
+                    # Save image
+                    temp_path = os.path.join('generated', f'frame_{i}.png')
+                    image.save(temp_path)
+                    image_paths.append(temp_path)
+                    st.write(f"Debug: Saved frame {i+1} to {temp_path}")
+                    
+                    # Update progress
+                    progress = (i + 1) / num_frames
+                    progress_bar.progress(progress)
+                else:
+                    st.error(f"Failed to generate frame {i+1}")
+                    break
             try:
                 # Show progress
                 progress_bar = st.progress(0)
