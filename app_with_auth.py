@@ -1,4 +1,4 @@
-# Version 1.0.1 - Fixed indentation
+# Version 1.0.2 - Added Debug Logging
 import streamlit as st
 import streamlit_authenticator as stauth
 import yaml
@@ -16,14 +16,14 @@ import base64
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
+
 # Debug logging
 st.write("Debug: App Started")
 st.write(f"Debug: STABILITY_API_KEY exists: {bool(os.getenv('STABILITY_API_KEY'))}")
 st.write(f"Debug: STRIPE_SECRET_KEY exists: {bool(os.getenv('STRIPE_SECRET_KEY'))}")
 st.write(f"Debug: COOKIE_KEY exists: {bool(os.getenv('COOKIE_KEY'))}")
-
-# Load environment variables
-load_dotenv()
 
 # Initialize Stripe
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
@@ -44,15 +44,13 @@ PRICE_IDS = {
 }
 
 # Initialize default config with hashed password
-hashed_passwords = stauth.Hasher(['abc123']).generate()
-
 config = {
     'credentials': {
         'usernames': {
             'demo': {
                 'email': 'demo@example.com',
                 'name': 'Demo User',
-                'password': hashed_passwords[0]
+                'password': '$2b$12$7YxB1sNZV2Y1sUq8L8NmkOYqvK8UbY7YVqDg6I8gMX9yyWIVFn6Pq'  # abc123
             }
         }
     },
