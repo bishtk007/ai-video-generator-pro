@@ -77,6 +77,12 @@ def increment_usage(username):
 def generate_image(prompt, negative_prompt="", width=1024, height=1024, steps=30):
     """Generate an image using Stability AI API"""
     st.write("Debug: Starting image generation")
+    st.write(f"Debug: Prompt: '{prompt}'")
+    
+    if not os.getenv('STABILITY_API_KEY'):
+        st.error("Missing Stability API key")
+        return None
+        
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -87,6 +93,7 @@ def generate_image(prompt, negative_prompt="", width=1024, height=1024, steps=30
     text_prompts = [{"text": prompt, "weight": 1}]
     if negative_prompt:  # Only add negative prompt if it's not empty
         text_prompts.append({"text": negative_prompt, "weight": -1})
+        st.write(f"Debug: Added negative prompt: '{negative_prompt}'")
     
     payload = {
         "text_prompts": text_prompts,
@@ -97,19 +104,26 @@ def generate_image(prompt, negative_prompt="", width=1024, height=1024, steps=30
         "samples": 1,
     }
     
-    st.write(f"Debug: Using prompt: {prompt}")
-    if negative_prompt:
-        st.write(f"Debug: Using negative prompt: {negative_prompt}")
+    st.write("Debug: Payload:", payload)
     
     try:
         st.write(f"Debug: Making API request to {SD_URL}")
         response = requests.post(SD_URL, headers=headers, json=payload)
         st.write(f"Debug: API Response Status: {response.status_code}")
+        st.write(f"Debug: API Response Headers: {dict(response.headers)}")
+        
         if response.status_code == 200:
-            image_data = base64.b64decode(response.json()["artifacts"][0]["base64"])
-            image = Image.open(io.BytesIO(image_data))
-            st.write("Debug: Image generated successfully")
-            return image
+            try:
+                response_json = response.json()
+                st.write("Debug: Successfully parsed JSON response")
+                image_data = base64.b64decode(response_json["artifacts"][0]["base64"])
+                image = Image.open(io.BytesIO(image_data))
+                st.write("Debug: Image generated successfully")
+                return image
+            except Exception as e:
+                st.error(f"Error processing API response: {str(e)}")
+                st.write("Debug: Response content:", response.text[:500])  # Show first 500 chars
+                return None
         else:
             st.error(f"API Error: {response.text}")
             return None
@@ -195,19 +209,25 @@ else:
     if not prompt:
         st.error("Please enter a prompt first")
     else:
-        st.write(f"Debug: Starting video generation with prompt: {prompt}")
+        st.write(f"Debug: Starting video generation")
+        st.write(f"Debug: Prompt: '{prompt}'")
+        st.write(f"Debug: Settings - Frames: {num_frames}, FPS: {fps}, Size: {width}x{height}, Steps: {steps}")
+        
         try:
+            # Create directories if they don't exist
+            os.makedirs('generated', exist_ok=True)
+            os.makedirs('output', exist_ok=True)
+            
             # Show progress
             progress_bar = st.progress(0)
             status_text = st.empty()
+            image_paths = []
             
             # Generate frames
             status_text.text("Generating frames...")
-            image_paths = []
             
             for i in range(num_frames):
                 st.write(f"Debug: Generating frame {i+1} of {num_frames}")
-                # Generate image
                 image = generate_image(prompt, negative_prompt, width, height, steps)
                 
                 if image:
@@ -215,11 +235,14 @@ else:
                     temp_path = os.path.join('generated', f'frame_{i}.png')
                     image.save(temp_path)
                     image_paths.append(temp_path)
-                    st.write(f"Debug: Saved frame {i+1} to {temp_path}")
+                    st.write(f"Debug: Saved frame {i+1}")
                     
                     # Update progress
                     progress = (i + 1) / num_frames
                     progress_bar.progress(progress)
+                    
+                    # Show the generated frame
+                    st.image(image, caption=f"Frame {i+1}")
                 else:
                     st.error(f"Failed to generate frame {i+1}")
                     break
