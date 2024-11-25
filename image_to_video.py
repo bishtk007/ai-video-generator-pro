@@ -35,7 +35,7 @@ class ImageToVideoConverter:
         height, width, layers = frame.shape
         
         # Define the codec and create VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')
         out = cv2.VideoWriter(self.output_path, fourcc, self.fps, (width, height))
         
         # Write images to video
