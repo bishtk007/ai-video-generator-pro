@@ -39,14 +39,13 @@ config = {
             }
         }
     },
-    
     'cookie': {
         'expiry_days': 30,
-        'key': 'abcdef123456789',
-        'name': 'auth_cookie'
+        'key': 'some_signature_key',
+        'name': 'some_cookie_name'
     },
     'preauthorized': {
-        'emails': ['test@example.com']
+        'emails': ['demo@example.com']
     }
 }
 # Initialize authenticator
