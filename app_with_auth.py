@@ -16,6 +16,12 @@ import base64
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
+# Debug logging
+st.write("Debug: App Started")
+st.write(f"Debug: STABILITY_API_KEY exists: {bool(os.getenv('STABILITY_API_KEY'))}")
+st.write(f"Debug: STRIPE_SECRET_KEY exists: {bool(os.getenv('STRIPE_SECRET_KEY'))}")
+st.write(f"Debug: COOKIE_KEY exists: {bool(os.getenv('COOKIE_KEY'))}")
+
 # Load environment variables
 load_dotenv()
 
@@ -106,6 +112,7 @@ def increment_usage(username):
 
 def generate_image(prompt, negative_prompt="", width=1024, height=1024, steps=30):
     """Generate an image using Stability AI API"""
+    st.write("Debug: Starting image generation")
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -131,16 +138,20 @@ def generate_image(prompt, negative_prompt="", width=1024, height=1024, steps=30
     }
     
     try:
+        st.write(f"Debug: Making API request to {SD_URL}")
         response = requests.post(SD_URL, headers=headers, json=payload)
+        st.write(f"Debug: API Response Status: {response.status_code}")
         if response.status_code == 200:
             image_data = base64.b64decode(response.json()["artifacts"][0]["base64"])
             image = Image.open(io.BytesIO(image_data))
+            st.write("Debug: Image generated successfully")
             return image
         else:
             st.error(f"API Error: {response.text}")
             return None
     except Exception as e:
         st.error(f"Error generating image: {str(e)}")
+        st.write(f"Debug: Full error: {repr(e)}")
         return None
 
 # Authentication
