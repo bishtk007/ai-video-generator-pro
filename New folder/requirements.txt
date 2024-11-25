@@ -7,3 +7,5 @@ streamlit-authenticator==0.2.3
 PyYAML==6.0.1
 stripe==7.11.0
 python-dotenv==1.0.0
+protobuf==3.20.0
+watchdog==3.0.0
