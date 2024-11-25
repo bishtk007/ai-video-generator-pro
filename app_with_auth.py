@@ -93,23 +93,57 @@ def increment_usage(username):
         st.session_state.user_usage[username]['count'] += 1
 
 def generate_image(prompt, negative_prompt="", width=1024, height=1024, steps=30):
-    """Generate an image using local Stable Diffusion WebUI API"""
+    """Generate an image using Stability AI API"""
+    api_key = os.getenv('STABILITY_API_KEY')
+    if not api_key:
+        st.error("Stability AI API key not found. Please set STABILITY_API_KEY in environment variables.")
+        return None
+        
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+    }
+
     payload = {
-        "prompt": prompt,
-        "negative_prompt": negative_prompt,
-        "steps": steps,
-        "width": width,
-        "height": height,
-        "sampler_name": "DPM++ 2M Karras",
+        "text_prompts": [
+            {
+                "text": prompt,
+                "weight": 1
+            },
+            {
+                "text": negative_prompt,
+                "weight": -1
+            }
+        ],
         "cfg_scale": 7,
-        "seed": -1,
+        "height": height,
+        "width": width,
+        "samples": 1,
+        "steps": steps,
     }
     
     try:
-        response = requests.post(url=f"{SD_URL}/sdapi/v1/txt2img", json=payload)
-        r = response.json()
-        image = Image.open(io.BytesIO(bytes.fromhex(r['images'][0])))
+        response = requests.post(
+            SD_URL,
+            headers=headers,
+            json=payload,
+        )
+        
+        if response.status_code != 200:
+            st.error(f"Error from Stability AI API: {response.text}")
+            return None
+            
+        data = response.json()
+        if not data['artifacts']:
+            st.error("No image generated")
+            return None
+            
+        # Convert base64 to image
+        image_data = base64.b64decode(data['artifacts'][0]['base64'])
+        image = Image.open(io.BytesIO(image_data))
         return image
+        
     except Exception as e:
         st.error(f"Error generating image: {str(e)}")
         return None
