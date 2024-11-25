@@ -53,7 +53,7 @@ config = {
             'demo': {
                 'email': 'demo@example.com',
                 'name': 'Demo User',
-                'password': hashed_passwords[0]  # Fresh hash of 'abc123'
+                'password': '$2b$12$wQOEVwZlRpLNB3GHq4FD6.7vRqB22HFT8iBz.vdMSKkzYfguX/R6C'  # Fixed hash for 'abc123'
             }
         }
     },
@@ -68,7 +68,20 @@ config = {
 }
 
 st.write("Debug: Config initialized")
-st.write(f"Debug: Using fresh password hash: {hashed_passwords[0]}")
+
+# Initialize authenticator with debug
+try:
+    authenticator = stauth.Authenticate(
+        config['credentials'],
+        config['cookie']['name'],
+        config['cookie']['key'],
+        config['cookie']['expiry_days'],
+        config['preauthorized']
+    )
+    st.write("Debug: Authenticator initialized successfully")
+except Exception as e:
+    st.error(f"Authentication setup error: {str(e)}")
+    st.write(f"Debug: Config used: {config}")
 
 # Initialize default config with hashed password
 config = {
