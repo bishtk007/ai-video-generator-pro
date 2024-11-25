@@ -1,4 +1,4 @@
-# Version 1.0.2 - Added Debug Logging
+# Version 1.0.2 - Production Ready
 import streamlit as st
 import streamlit_authenticator as stauth
 import yaml
@@ -36,20 +36,16 @@ st.write(f"Debug: COOKIE_KEY exists: {bool(os.getenv('COOKIE_KEY'))}")
 # Initialize Stripe
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
-# Set page config
-st.set_page_config(
-    page_title="AI Video Generator Pro",
-    page_icon="🎬",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
 # Constants
 SD_URL = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image"
 PRICE_IDS = {
     'basic': 'price_H5ggYwtDq8jGy7',  # $9.99/month
     'pro': 'price_H5ggYwtDq8jGy8'     # $29.99/month
 }
+
+# Load config file
+with open('config.yaml') as file:
+    config = yaml.load(file, Loader=SafeLoader)
 
 # Initialize default config with hashed password
 config = {
