@@ -43,15 +43,28 @@ PRICE_IDS = {
     'pro': 'price_H5ggYwtDq8jGy8'     # $29.99/month
 }
 
-# Load config file
-try:
-    with open('config.yaml') as file:
-        st.write("Debug: Found config.yaml")
-        config = yaml.load(file, Loader=SafeLoader)
-except Exception as e:
-    st.error(f"Error loading config: {str(e)}")
-    st.write("Debug: Current directory contents:")
-    st.write(os.listdir())
+# Authentication configuration
+config = {
+    'credentials': {
+        'usernames': {
+            'demo': {
+                'email': 'demo@example.com',
+                'name': 'Demo User',
+                'password': '$2b$12$7YxB1sNZV2Y1sUq8L8NmkOYqvK8UbY7YVqDg6I8gMX9yyWIVFn6Pq'  # Password is 'abc123'
+            }
+        }
+    },
+    'cookie': {
+        'expiry_days': 30,
+        'key': os.getenv('COOKIE_KEY', 'default_secret_key'),
+        'name': 'ai_video_pro_cookie'
+    },
+    'preauthorized': {
+        'emails': ['demo@example.com']
+    }
+}
+
+st.write("Debug: Config initialized")
 
 # Initialize default config with hashed password
 config = {
