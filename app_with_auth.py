@@ -46,29 +46,47 @@ PRICE_IDS = {
 # Generate hashed password
 hashed_passwords = stauth.Hasher(['abc123']).generate()
 
-# Authentication configuration
-config = {
-    'credentials': {
-        'usernames': {
-            'demo': {
-                'email': 'demo@example.com',
-                'name': 'Demo User',
-                'password': '$2b$12$wQOEVwZlRpLNB3GHq4FD6.7vRqB22HFT8iBz.vdMSKkzYfguX/R6C'  # Fixed hash for 'abc123'
+# Initialize session state for authentication
+if 'authenticator' not in st.session_state:
+    # Authentication configuration
+    config = {
+        'credentials': {
+            'usernames': {
+                'demo': {
+                    'email': 'demo@example.com',
+                    'name': 'Demo User',
+                    'password': '$2b$12$wQOEVwZlRpLNB3GHq4FD6.7vRqB22HFT8iBz.vdMSKkzYfguX/R6C'  # Fixed hash for 'abc123'
+                }
             }
+        },
+        'cookie': {
+            'expiry_days': 30,
+            'key': os.getenv('COOKIE_KEY', 'default_secret_key'),
+            'name': 'ai_video_pro_cookie'
+        },
+        'preauthorized': {
+            'emails': ['demo@example.com']
         }
-    },
-    'cookie': {
-        'expiry_days': 30,
-        'key': os.getenv('COOKIE_KEY', 'default_secret_key'),
-        'name': 'ai_video_pro_cookie'
-    },
-    'preauthorized': {
-        'emails': ['demo@example.com']
     }
-}
 
-st.write("Debug: Config initialized")
+    st.write("Debug: Config initialized")
 
+    # Initialize authenticator with debug
+    try:
+        st.session_state['authenticator'] = stauth.Authenticate(
+            config['credentials'],
+            config['cookie']['name'],
+            config['cookie']['key'],
+            config['cookie']['expiry_days'],
+            config['preauthorized']
+        )
+        st.write("Debug: Authenticator initialized successfully")
+    except Exception as e:
+        st.error(f"Authentication setup error: {str(e)}")
+        st.write(f"Debug: Config used: {config}")
+
+# Get the authenticator from session state
+authenticator = st.session_state['authenticator']
 # Initialize authenticator with debug
 try:
     authenticator = stauth.Authenticate(
