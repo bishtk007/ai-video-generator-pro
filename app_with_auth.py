@@ -27,7 +27,8 @@ st.set_page_config(page_title="AI Video Generator Pro", layout="wide")
 SD_URL = os.getenv('SD_API_URL', 'http://127.0.0.1:7860')
 
 # Load config file
-with open('config.yaml') as file:
+config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
+with open(config_path) as file:
     config = yaml.load(file, Loader=SafeLoader)
 
 # Update cookie configuration from environment
