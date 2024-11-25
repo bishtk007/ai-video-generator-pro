@@ -25,7 +25,7 @@ stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 st.set_page_config(page_title="AI Video Generator Pro", layout="wide")
 
 # Constants
-SD_URL = https://api.stability.ai/v1/generation/stable-diffusion-v1-5/text-to-image
+SD_URL = "https://api.stability.ai/v1/generation/stable-diffusion-v1-5/text-to-image"
 
 # Initialize default config with hashed password
 hashed_passwords = stauth.Hasher(['abc123']).generate()
