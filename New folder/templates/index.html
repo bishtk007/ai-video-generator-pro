@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loading {
+            display: none;
+        }
+        .loading.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8">AI Video Generator</h1>
+        
+        <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+            <form id="uploadForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Upload Image</label>
+                    <input type="file" name="file" accept="image/*" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Enter Prompt</label>
+                    <textarea name="prompt" required
+                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                              placeholder="Describe how you want to transform the image..."></textarea>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Generate Video
+                </button>
+            </form>
+            
+            <div id="loading" class="loading mt-4">
+                <div class="animate-pulse flex space-x-4">
+                    <div class="flex-1 space-y-4 py-1">
+                        <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div class="space-y-2">
+                            <div class="h-4 bg-gray-200 rounded"></div>
+                            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-gray-600 mt-2">Generating your video... This may take a few minutes.</p>
+            </div>
+            
+            <div id="result" class="mt-4 hidden">
+                <h2 class="text-lg font-semibold mb-2">Your Generated Video:</h2>
+                <video id="generatedVideo" controls class="w-full rounded-lg shadow-lg">
+                    Your browser does not support the video tag.
+                </video>
+                <button onclick="downloadVideo()" 
+                        class="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Download Video
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const video = document.getElementById('generatedVideo');
+        let currentVideoPath = '';
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            
+            loading.classList.add('active');
+            result.classList.add('hidden');
+            
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentVideoPath = data.video_path;
+                    video.src = `/video/${data.video_path}`;
+                    result.classList.remove('hidden');
+                } else {
+                    alert(data.error || 'An error occurred');
+                }
+            } catch (error) {
+                alert('An error occurred while processing your request');
+                console.error('Error:', error);
+            } finally {
+                loading.classList.remove('active');
+            }
+        };
+
+        function downloadVideo() {
+            if (currentVideoPath) {
+                const a = document.createElement('a');
+                a.href = `/video/${currentVideoPath}`;
+                a.download = currentVideoPath;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+    </script>
+</body>
+</html>
