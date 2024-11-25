@@ -1,8 +1,5 @@
-# Version 1.0.2 - Production Ready
+# Version 1.0.3 - Simplified Authentication
 import streamlit as st
-import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader
 import requests
 from PIL import Image
 import os
@@ -43,101 +40,12 @@ PRICE_IDS = {
     'pro': 'price_H5ggYwtDq8jGy8'     # $29.99/month
 }
 
-# Generate hashed password
-hashed_passwords = stauth.Hasher(['abc123']).generate()
-
-# Initialize session state for authentication
-if 'authenticator' not in st.session_state:
-    # Authentication configuration
-    config = {
-        'credentials': {
-            'usernames': {
-                'demo': {
-                    'email': 'demo@example.com',
-                    'name': 'Demo User',
-                    'password': '$2b$12$wQOEVwZlRpLNB3GHq4FD6.7vRqB22HFT8iBz.vdMSKkzYfguX/R6C'  # Fixed hash for 'abc123'
-                }
-            }
-        },
-        'cookie': {
-            'expiry_days': 30,
-            'key': os.getenv('COOKIE_KEY', 'default_secret_key'),
-            'name': 'ai_video_pro_cookie'
-        },
-        'preauthorized': {
-            'emails': ['demo@example.com']
-        }
-    }
-
-    st.write("Debug: Config initialized")
-
-    # Initialize authenticator with debug
-    try:
-        st.session_state['authenticator'] = stauth.Authenticate(
-            config['credentials'],
-            config['cookie']['name'],
-            config['cookie']['key'],
-            config['cookie']['expiry_days'],
-            config['preauthorized']
-        )
-        st.write("Debug: Authenticator initialized successfully")
-    except Exception as e:
-        st.error(f"Authentication setup error: {str(e)}")
-        st.write(f"Debug: Config used: {config}")
-
-# Get the authenticator from session state
-authenticator = st.session_state['authenticator']
-# Initialize authenticator with debug
-try:
-    authenticator = stauth.Authenticate(
-        config['credentials'],
-        config['cookie']['name'],
-        config['cookie']['key'],
-        config['cookie']['expiry_days'],
-        config['preauthorized']
-    )
-    st.write("Debug: Authenticator initialized successfully")
-except Exception as e:
-    st.error(f"Authentication setup error: {str(e)}")
-    st.write(f"Debug: Config used: {config}")
-
-# Initialize default config with hashed password
-config = {
-    'credentials': {
-        'usernames': {
-            'demo': {
-                'email': 'demo@example.com',
-                'name': 'Demo User',
-                'password': '$2b$12$7YxB1sNZV2Y1sUq8L8NmkOYqvK8UbY7YVqDg6I8gMX9yyWIVFn6Pq'  # abc123
-            }
-        }
-    },
-    'cookie': {
-        'expiry_days': 30,
-        'key': os.getenv('COOKIE_KEY', 'default_secret_key'),
-        'name': 'ai_video_pro_cookie'
-    },
-    'preauthorized': {
-        'emails': ['demo@example.com']
-    }
-}
-
-# Initialize authenticator
-authenticator = stauth.Authenticate(
-    config['credentials'],
-    config['cookie']['name'],
-    config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
-)
-
-# Create necessary directories
-for folder in ['uploads', 'generated', 'output']:
-    os.makedirs(folder, exist_ok=True)
-
 # Initialize session state
 if 'user_usage' not in st.session_state:
     st.session_state.user_usage = {}
+
+if 'authentication_status' not in st.session_state:
+    st.session_state['authentication_status'] = None
 
 def check_user_limits(username, tier='free'):
     """Check if user has exceeded their usage limits"""
@@ -211,12 +119,31 @@ def generate_image(prompt, negative_prompt="", width=1024, height=1024, steps=30
         return None
 
 # Authentication
-name, authentication_status, username = authenticator.login('Login', 'main')
-
-if authentication_status:
-    # Successful login
-    authenticator.logout('Logout', 'sidebar')
-    st.sidebar.title(f'Welcome {name}')
+if st.session_state['authentication_status'] != True:
+    # Show login form
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    
+    if st.button("Login"):
+        if username == "demo" and password == "abc123":
+            st.session_state['authentication_status'] = True
+            st.session_state['username'] = username
+            st.session_state['name'] = "Demo User"
+            st.experimental_rerun()
+        else:
+            st.error("Invalid username or password")
+            st.info("Demo account - Username: demo, Password: abc123")
+else:
+    # User is logged in
+    username = st.session_state['username']
+    name = st.session_state['name']
+    
+    # Show logout button in sidebar
+    if st.sidebar.button("Logout"):
+        st.session_state['authentication_status'] = False
+        st.experimental_rerun()
+    
+    st.sidebar.title(f"Welcome {name}")
     
     # Subscription Management in Sidebar
     st.sidebar.header("Subscription")
@@ -325,18 +252,11 @@ if authentication_status:
     else:
         st.warning("You've reached your daily generation limit. Please upgrade to continue!")
 
-elif authentication_status == False:
-    st.error('Username/password is incorrect')
-    st.info("Demo account - Username: demo, Password: abc123")
-elif authentication_status == None:
-    st.warning('Please enter your username and password')
-    st.info("Demo account - Username: demo, Password: abc123")
-
 # Footer
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center'>
-    <p> 2024 AI Video Generator Pro. All rights reserved.</p>
+    <p>© 2024 AI Video Generator Pro. All rights reserved.</p>
     <p>Need help? Contact support@aivideogeneratorpro.com</p>
 </div>
 """, unsafe_allow_html=True)
