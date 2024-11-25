@@ -1,4 +1,4 @@
-# Version 1.0.3 - Simplified Authentication
+# Version 1.0.4 - Fixed Indentation
 import streamlit as st
 import requests
 from PIL import Image
@@ -206,99 +206,74 @@ else:
                                      placeholder="Describe what you want to avoid in the generation...")
         
         if st.button("Generate Video", type="primary"):
-    if not prompt:
-        st.error("Please enter a prompt first")
-    else:
-        st.write(f"Debug: Starting video generation")
-        st.write(f"Debug: Prompt: '{prompt}'")
-        st.write(f"Debug: Settings - Frames: {num_frames}, FPS: {fps}, Size: {width}x{height}, Steps: {steps}")
-        
-        try:
-            # Create directories if they don't exist
-            os.makedirs('generated', exist_ok=True)
-            os.makedirs('output', exist_ok=True)
-            
-            # Show progress
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            image_paths = []
-            
-            # Generate frames
-            status_text.text("Generating frames...")
-            
-            for i in range(num_frames):
-                st.write(f"Debug: Generating frame {i+1} of {num_frames}")
-                image = generate_image(prompt, negative_prompt, width, height, steps)
+            if not prompt:
+                st.error("Please enter a prompt first")
+            else:
+                st.write(f"Debug: Starting video generation")
+                st.write(f"Debug: Prompt: '{prompt}'")
+                st.write(f"Debug: Settings - Frames: {num_frames}, FPS: {fps}, Size: {width}x{height}, Steps: {steps}")
                 
-                if image:
-                    # Save image
-                    temp_path = os.path.join('generated', f'frame_{i}.png')
-                    image.save(temp_path)
-                    image_paths.append(temp_path)
-                    st.write(f"Debug: Saved frame {i+1}")
+                try:
+                    # Create directories if they don't exist
+                    os.makedirs('generated', exist_ok=True)
+                    os.makedirs('output', exist_ok=True)
                     
-                    # Update progress
-                    progress = (i + 1) / num_frames
-                    progress_bar.progress(progress)
+                    # Show progress
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    image_paths = []
                     
-                    # Show the generated frame
-                    st.image(image, caption=f"Frame {i+1}")
-                else:
-                    st.error(f"Failed to generate frame {i+1}")
-                    break
-            try:
-                # Show progress
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                # Generate frames
-                status_text.text("Generating frames...")
-                image_paths = []
-                
-                for i in range(num_frames):
-                    # Generate image
-                    image = generate_image(prompt, negative_prompt, width, height, steps)
+                    # Generate frames
+                    status_text.text("Generating frames...")
                     
-                    if image:
-                        # Save image
-                        temp_path = os.path.join('generated', f'frame_{i}.png')
-                        image.save(temp_path)
-                        image_paths.append(temp_path)
+                    for i in range(num_frames):
+                        st.write(f"Debug: Generating frame {i+1} of {num_frames}")
+                        image = generate_image(prompt, negative_prompt, width, height, steps)
                         
-                        # Update progress
-                        progress = (i + 1) / num_frames
-                        progress_bar.progress(progress)
-                    else:
-                        st.error("Failed to generate image")
-                        break
-                
-                if len(image_paths) == num_frames:
-                    # Convert to video
-                    status_text.text("Converting to video...")
-                    output_path = os.path.join('output', f'video_{uuid.uuid4()}.mp4')
+                        if image:
+                            # Save image
+                            temp_path = os.path.join('generated', f'frame_{i}.png')
+                            image.save(temp_path)
+                            image_paths.append(temp_path)
+                            st.write(f"Debug: Saved frame {i+1}")
+                            
+                            # Update progress
+                            progress = (i + 1) / num_frames
+                            progress_bar.progress(progress)
+                            
+                            # Show the generated frame
+                            st.image(image, caption=f"Frame {i+1}")
+                        else:
+                            st.error(f"Failed to generate frame {i+1}")
+                            break
                     
-                    converter = ImageToVideoConverter(output_path=output_path, fps=fps)
-                    if converter.convert_images_to_video(image_paths):
-                        # Show video
-                        status_text.empty()
-                        progress_bar.empty()
+                    if len(image_paths) == num_frames:
+                        # Convert to video
+                        status_text.text("Converting to video...")
+                        output_path = os.path.join('output', f'video_{uuid.uuid4()}.mp4')
                         
-                        st.success("Video generated successfully!")
-                        st.video(output_path)
-                        
-                        # Increment usage
-                        increment_usage(username)
-                    else:
-                        st.error("Failed to convert images to video")
-                
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
-                
-            finally:
-                # Clean up temporary files
-                for path in image_paths:
-                    if os.path.exists(path):
-                        os.remove(path)
+                        converter = ImageToVideoConverter(output_path=output_path, fps=fps)
+                        if converter.convert_images_to_video(image_paths):
+                            # Show video
+                            status_text.empty()
+                            progress_bar.empty()
+                            
+                            st.success("Video generated successfully!")
+                            st.video(output_path)
+                            
+                            # Increment usage
+                            increment_usage(username)
+                        else:
+                            st.error("Failed to convert images to video")
+                    
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
+                    
+                finally:
+                    # Clean up temporary files
+                    for path in image_paths:
+                        if os.path.exists(path):
+                            os.remove(path)
         
         # Show usage info
         if username in st.session_state.user_usage:
